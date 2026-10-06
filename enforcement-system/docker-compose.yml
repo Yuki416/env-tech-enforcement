@@ -1,0 +1,103 @@
+# 環保執法系統：網頁介面（enforcement）＋第 18 次 Co-DETR 推論服務（codetr）＋本機 VLM（ollama）
+#
+# 用法：
+#   cp .env.example .env   # 填入下面三個路徑
+#   docker compose up -d codetr        # 只起 Co-DETR
+#   docker compose up -d               # 全部
+#
+# 需要的環境變數：
+#   VIDEO_DIR     原始監視器影片（唯讀）
+#   CODETR_REPO   本 repo 的 co-detr/ 目錄（config 與 hooks）
+#   RESULTS_DIR   訓練結果目錄（含第 18 次的 checkpoint）
+
+services:
+  ollama:
+    # 鎖定版本：升級前請實測確認有用到 GPU
+    image: ollama/ollama:0.12.11
+    container_name: enforce-ollama
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      # 模型長駐記憶體，避免每次呼叫重載（VLM 載入很慢）
+      - OLLAMA_KEEP_ALIVE=24h
+    volumes:
+      - ./docker_data/ollama:/root/.ollama
+    ports:
+      - "127.0.0.1:11435:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  enforcement:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: enforcement-system:local
+    container_name: enforce-app
+    depends_on:
+      - ollama
+    environment:
+      # ── VLM 後端 ────────────────────────────────────────────────
+      # 變數名為 GLM_* 是歷史包袱：原設計呼叫雲端 API，後改為本機 ollama。
+      - VLM_PROVIDER=ollama
+      - GLM_API_BASE=http://ollama:11434
+      - GLM_MODEL=${GLM_MODEL:-qwen2.5vl:7b}
+      - GLM_TIMEOUT_SEC=180
+      - VLM_HARD_TIMEOUT_SEC=300
+      # ── 跑批參數 ────────────────────────────────────────────────
+      - ENFORCE_MAX_PARALLEL=1
+      - ENFORCE_LOG_LEVEL=DEBUG
+      - ENFORCE_PREFILTER_CONF=0.25
+      - ENFORCE_MIN_VIOLATION_CONF=0.70
+      # ── 第 18 次 Co-DETR litter 來源（選用；不設就完全走 YOLO）──────
+      - ENFORCE_CODETR_URL=${ENFORCE_CODETR_URL:-http://codetr:8091}
+      - ENFORCE_CODETR_SCORE=0.30
+    volumes:
+      - .:/app
+      - ${VIDEO_DIR}:/videos:ro
+      - ./docker_data/output:/output
+    working_dir: /app
+    ports:
+      # 網頁介面；只綁 127.0.0.1，遠端請用 SSH 通道
+      - "127.0.0.1:8080:8080"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # 第 18 次 Co-DETR（v18 BGS 4ch）。獨立成服務是因為 enforcement image 沒有 mmdet/mmcv。
+  # 只在 compose 內網開 8091。
+  codetr:
+    image: co-detr:latest
+    container_name: enforce-codetr
+    environment:
+      - PYTHONPATH=/opt/mmdetection:/workspace/project
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+      - PYTHONUTF8=1
+    volumes:
+      - .:/app:ro
+      # Co-DETR 的 config 與 hooks（LoadImageAndChangemap、Det4ChDataPreprocessor）
+      - ${CODETR_REPO}:/workspace/project:ro
+      - ${RESULTS_DIR}:/workspace/hdd2_storage:ro
+      # 影片路徑必須與 enforcement 完全一致，否則幀號對得上、檔案卻找不到
+      - ${VIDEO_DIR}:/videos:ro
+    working_dir: /app
+    command: >
+      python /app/codetr_service/server.py
+      --host 0.0.0.0 --port 8091
+      --roots /videos
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

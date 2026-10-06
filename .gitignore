@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+# 權重、資料與產物不進 repo
+*.pth
+*.pt
+*.onnx
+*.pkl
+*.avi
+*.mp4
+*.log
+data/
+output/
+docker_data/
+models/
+.env

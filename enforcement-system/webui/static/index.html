@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>環保科技執法管理系統</title>
+    <style>
+        /* ==========================================================================
+           Design Tokens (Light Theme for Daytime Operation, Offline Compatible)
+           ========================================================================== */
+        :root {
+            --bg-base: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --bg-input: #ffffff;
+            
+            --border-color: #cbd5e1;
+            --border-subtle: #e2e8f0;
+            --border-focus: #2563eb;
+
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-dim: #64748b;
+
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.15);
+
+            --accent-cyan: #0284c7;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+            --warning: #d97706;
+            --warning-bg: #fef3c7;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --purple: #7c3aed;
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+
+            --shadow-card: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+            --transition-fast: 0.15s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        /* Utility Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-base);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Header (Daylight Optimized Header) */
+        .app-header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1e40af, #0284c7);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
+
+        .brand-text h1 {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #0f172a;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .stat-badge {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 95px;
+        }
+
+        .stat-badge .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .stat-badge .stat-value {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-badge.highlight .stat-value {
+            color: var(--primary);
+        }
+
+        .stat-badge.danger-stat {
+            background-color: var(--danger-bg);
+            border-color: #fca5a5;
+        }
+
+        .stat-badge.danger-stat .stat-value {
+            color: var(--danger);
+        }
+
+        /* App Container Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+            padding: 16px;
+            flex: 1;
+            max-width: 1920px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Sidebar Control Panel */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+
+        .form-control:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+        .btn-outline:hover {
+            color: var(--text-main);
+            background-color: #f8fafc;
+            border-color: var(--text-muted);
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        /* Tabs Navigation */
+        .tabs-header {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border-color);
+            background-color: var(--bg-surface);
+            padding: 8px 12px 0 12px;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            box-shadow: var(--shadow-card);
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-badge {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Table Design for High Daylight Readability */
+        .table-wrapper {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            box-shadow: var(--shadow-card);
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .custom-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .custom-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 13px;
+            vertical-align: middle;
+            color: var(--text-main);
+        }
+
+        .custom-table tbody tr {
+            transition: background-color var(--transition-fast);
+        }
+
+        .custom-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Row Idle Alert State */
+        .custom-table tbody tr.row-idle-alert {
+            background-color: #fef2f2 !important;
+            border-left: 5px solid #dc2626;
+        }
+
+        .custom-table tbody tr.row-idle-alert td {
+            color: #991b1b;
+        }
+
+        /* Badges for Status in Light Mode */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-queued {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .status-preparing {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            border: 1px solid #c084fc;
+        }
+
+        .status-prefilter {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #38bdf8;
+        }
+
+        /* Co-DETR（我們自己訓練的垃圾偵測器）。只有啟用 sidecar 時才會出現 */
+        .status-codetr {
+            background-color: #ccfbf1;
+            color: #0f766e;
+            border: 1px solid #2dd4bf;
+        }
+
+        .status-vlm {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #60a5fa;
+        }
+
+        .status-merging {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fbbf24;
+        }
+
+        .status-completed {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #4ade80;
+        }
+
+        .status-error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #f87171;
+        }
+
+        .alert-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #dc2626;
+            color: #ffffff;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Progress Bar */
+        .progress-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 140px;
+        }
+
+        .progress-bar-bg {
+            height: 7px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #0284c7);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-bar-fill.success {
+            background: #16a34a;
+        }
+
+        .progress-bar-fill.danger {
+            background: #dc2626;
+        }
+
+        .progress-text-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* VLM Telemetry Cell */
+        .vlm-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 11.5px;
+        }
+
+        .vlm-tag {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .vlm-val {
+            color: #0369a1;
+            font-weight: 700;
+        }
+
+        /* Log Panel */
+        .log-panel {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            height: 300px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .log-entry .time {
+            color: #64748b;
+            margin-right: 8px;
+        }
+        .log-entry.info { color: #93c5fd; }
+        .log-entry.warn { color: #fde047; }
+        .log-entry.error { color: #fca5a5; }
+        .log-entry.success { color: #86efac; }
+
+        /* Video Player Controls & Scrubbing */
+        .player-container {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .player-screen-wrapper {
+            position: relative;
+            width: 100%;
+            /* 原本固定 420px。監視器影片是 4:3，在寬版面裡只用掉約 37% 的寬度，
+               兩側全是黑邊。改成隨視窗高度縮放，讓稽查人員看得清楚。
+               上限 820px 避免在超高螢幕上把下方的時間軸與控制列擠出畫面。 */
+            height: clamp(360px, 72vh, 820px);
+            background-color: #0f172a;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .player-svg-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Timeline Scrubbing & Marker Bar */
+        .timeline-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background-color: #f8fafc;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .timeline-time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .timeline-bar-wrapper {
+            position: relative;
+            width: 100%;
+            height: 28px;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 10px;
+            background: #cbd5e1;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 5;
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2563eb;
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .timeline-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .timeline-marker-highlight {
+            position: absolute;
+            height: 10px;
+            background-color: rgba(220, 38, 38, 0.7);
+            border-radius: 4px;
+            top: 9px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .timeline-marker-flag {
+            position: absolute;
+            top: -2px;
+            transform: translateX(-50%);
+            background-color: #dc2626;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 10px;
+            z-index: 6;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
+        .player-controls-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background-color: #f1f5f9;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .speed-indicator {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-size: 13px;
+            color: #0284c7;
+            min-width: 55px;
+            text-align: center;
+        }
+
+        .clips-gallery-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .clip-card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .clip-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .clip-card.active-clip {
+            border: 2px solid #2563eb;
+            background-color: #eff6ff;
+        }
+
+        .clip-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clip-card-title {
+            font-weight: 700;
+            font-size: 12.5px;
+            color: #0f172a;
+        }
+
+        .clip-card-body {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        /* ⭐ New Feature: Enforcement Officer Video Note / Annotation Section */
+        .notes-panel {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notes-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .note-saved-tag {
+            font-size: 11px;
+            color: #16a34a;
+            font-weight: 600;
+            display: none;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            height: 75px;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-size: 13px;
+            color: #0f172a;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+
+        .notes-textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .notes-quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .quick-tag-btn {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .quick-tag-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background-color: #eff6ff;
+        }
+
+        /* Modal for Screenshot Preview */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 740px;
+            max-width: 90vw;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #0f172a; }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .preview-img-box {
+            width: 100%;
+            /* 原本固定 360px，舉證截圖太小看不清楚細節。改成隨視窗高度縮放。 */
+            height: clamp(320px, 58vh, 700px);
+            background-color: #0f172a;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background-color: #f8fafc;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-detail-item {
+            font-size: 12.5px;
+            color: var(--text-main);
+        }
+        .preview-detail-item strong {
+            color: var(--text-muted);
+        }
+
+        /* Hierarchy Path Display */
+        .path-hierarchy {
+            font-family: monospace;
+            font-size: 11px;
+            color: #0369a1;
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 3px;
+        }
+
+        /* ── 以下為接上後端時新增，未更動任何既有規則 ── */
+        .browser-list { max-height: 46vh; overflow-y: auto; border: 1px solid var(--border-color);
+                        border-radius: 6px; }
+        .browser-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+                        cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+        .browser-item:last-child { border-bottom: none; }
+        .browser-item:hover { background: #f1f5f9; }
+        .browser-item .bi-meta { margin-left: auto; font-size: 11px; color: var(--text-dim); }
+        .browser-path { font-family: monospace; font-size: 12px; color: var(--text-muted);
+                        background: #f8fafc; padding: 8px 12px; border-radius: 6px;
+                        margin-bottom: 10px; word-break: break-all; }
+        .browser-root-chip { display: inline-block; padding: 3px 9px; margin: 0 4px 4px 0;
+                             font-size: 11.5px; border: 1px solid var(--border-color);
+                             border-radius: 999px; cursor: pointer; background: #fff; }
+        .browser-root-chip:hover { background: #eff6ff; border-color: #2563eb; color: #2563eb; }
+        .empty-state { padding: 42px 20px; text-align: center; color: var(--text-dim);
+                       font-size: 13.5px; }
+        .conn-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
+                     border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+        .conn-ok { background: #dcfce7; color: #15803d; }
+        .conn-bad { background: #fee2e2; color: #b91c1c; }
+        /* 工作佇列分頁列。佇列一頁裝得下時 app.js 會整條隱藏，維持設計稿原樣 */
+        .jobs-pager { display: flex; align-items: center; justify-content: center; gap: 12px;
+                      padding: 10px 16px; border-top: 1px solid var(--border-color); }
+        .jobs-pager-info { font-size: 12.5px; color: var(--text-dim); }
+        .jobs-pager button[disabled] { opacity: .45; cursor: not-allowed; }
+        /* ── 處理模式選擇器（完整 / 測試）───────────────────────── */
+        .mode-group { display: flex; flex-direction: column; gap: 8px; }
+        .mode-card {
+            display: flex; gap: 9px; align-items: flex-start;
+            padding: 10px 11px; border: 1.5px solid var(--border, #e2e8f0);
+            border-radius: 8px; cursor: pointer; transition: all .15s;
+        }
+        .mode-card:hover { border-color: #93c5fd; background: #f8fafc; }
+        .mode-card:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
+        .mode-card input { margin-top: 3px; flex-shrink: 0; }
+        .mode-body { display: flex; flex-direction: column; gap: 3px; }
+        .mode-name { font-weight: 600; font-size: 13px; color: #1e293b; }
+        .mode-desc { font-size: 11.5px; line-height: 1.5; color: #64748b; }
+        .mode-note {
+            margin-top: 10px; padding: 8px 10px; border-radius: 6px;
+            font-size: 11.5px; line-height: 1.55;
+            background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
+        }
+        .mode-note:empty { display: none; }
+        /* 測試模式下用不到的參數：淡化但不停用，讓使用者知道它存在、只是這個模式不看它 */
+        .opt-dimmed { opacity: .38; }
+        .opt-dimmed input { pointer-events: none; }
+
+        /* ── 全螢幕 ────────────────────────────────────────────────
+           進全螢幕的是 wrapper（不是 <video>），這樣未來要在影片上疊 AI 標註
+           或浮動控制列時還有容器可用。但 wrapper 的 height 是 clamp(...)，
+           全螢幕時必須蓋掉，否則整個螢幕只會用到 72vh。 */
+        .player-screen-wrapper:fullscreen,
+        .player-screen-wrapper:-webkit-full-screen {
+            height: 100% !important;
+            width: 100% !important;
+            border-radius: 0;
+            border: none;
+        }
+        .player-screen-wrapper:fullscreen video { width: 100%; height: 100%; }
+
+        /* ── 播放器整體：畫面 / 時間軸 / 控制列黏成一塊 ─────────────
+           原本三塊各自是獨立面板、中間有間距，控制列被時間軸那一整區推到很下面。
+           一般播放器的控制列就貼在畫面下方，這裡照做。 */
+        .player-shell { display: flex; flex-direction: column; }
+        .player-shell > .player-screen-wrapper {
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            border-bottom: none;
+        }
+        .player-shell > .timeline-section {
+            border-radius: 0;
+            border-top: none;
+            border-bottom: none;
+            padding: 10px 14px 6px;
+            background: #f8fafc;
+        }
+        .player-shell > .player-controls-toolbar {
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            border-top: none;
+        }
+        .player-time-readout {
+            margin-left: auto;
+            padding-left: 10px;
+            border-left: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+
+        /* ── 片段卡片上的違規區間（起 / 終）────────────────────────
+           點了只定位、不播放，所以做成明確的按鈕而不是純文字，
+           讓稽查人員一眼看出這兩個時間是可以點的。 */
+        .clip-seg-row {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+            margin-top: 8px; padding-top: 8px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 11.5px;
+        }
+        .clip-seg-label { color: var(--text-dim); font-weight: 600; margin-right: 2px; }
+        .clip-seg-btn {
+            font-family: monospace; font-size: 11.5px; font-weight: 700;
+            color: #1d4ed8; background: #eff6ff;
+            border: 1px solid #bfdbfe; border-radius: 5px;
+            padding: 2px 7px; cursor: pointer;
+            transition: background .12s, border-color .12s;
+        }
+        .clip-seg-btn:hover { background: #dbeafe; border-color: #60a5fa; }
+        .clip-seg-btn:active { background: #bfdbfe; }
+        .clip-seg-dash { color: var(--text-dim); }
+        .clip-seg-dur { margin-left: auto; color: var(--text-muted); }
+
+        /* ── 片段卡片的編輯操作列 ────────────────────────────────── */
+        .clip-edit-row {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 6px; font-size: 11px;
+        }
+        .clip-act-btn {
+            background: #f8fafc; color: #475569;
+            border: 1px solid var(--border-color); border-radius: 5px;
+            padding: 2px 8px; font-size: 11px; cursor: pointer;
+            transition: background .12s, color .12s, border-color .12s;
+        }
+        .clip-act-btn:hover { background: #e2e8f0; color: #1e293b; }
+        .clip-act-btn.danger:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+        .clip-edited-tag {
+            margin-right: auto; padding: 1px 7px; border-radius: 999px;
+            background: #fef3c7; color: #b45309; font-weight: 700; font-size: 10.5px;
+        }
+        /* 「新增片段」卡：虛線框，跟真的片段卡一眼分得開 */
+        .clip-card-add {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 6px; min-height: 120px;
+            border: 2px dashed #cbd5e1; background: #fafbfc;
+            color: var(--text-muted); text-align: center;
+        }
+        .clip-card-add:hover { border-color: #60a5fa; background: #eff6ff; color: #1d4ed8; }
+        .clip-add-plus { font-size: 26px; line-height: 1; font-weight: 300; }
+        .clip-add-text { font-size: 12px; font-weight: 600; }
+        .clip-add-text span { font-weight: 400; font-size: 10.5px; opacity: .75; word-break: break-all; }
+
+        /* 影片右下角的浮動全螢幕鈕 —— 滑到播放區才浮現，不擋畫面 */
+        .fs-overlay-btn {
+            position: absolute; right: 12px; bottom: 12px; z-index: 5;
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 11px; border: none; border-radius: 6px; cursor: pointer;
+            background: rgba(15, 23, 42, .72); color: #f1f5f9;
+            font-size: 12px; font-weight: 600;
+            opacity: 0; transition: opacity .15s, background .15s;
+        }
+        .player-screen-wrapper:hover .fs-overlay-btn,
+        .fs-overlay-btn:focus-visible { opacity: 1; }
+        .fs-overlay-btn:hover { background: rgba(15, 23, 42, .92); }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section (Light Theme) -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1>科技執法 AI 輔助系統</h1>
+                <p>Environmental Law Enforcement System (Daylight Interface)</p>
+            </div>
+        </div>
+
+        <div class="header-stats">
+            <div class="stat-badge">
+                <span class="stat-label">總影片數</span>
+                <span class="stat-value" data-field="total_jobs">7</span>
+            </div>
+            <div class="stat-badge highlight">
+                <span class="stat-label">執行/判定中</span>
+                <span class="stat-value" data-field="running_jobs">3</span>
+            </div>
+            <div class="stat-badge">
+                <span class="stat-label">排隊中</span>
+                <span class="stat-value" data-field="queued_jobs">1</span>
+            </div>
+            <div class="stat-badge">
+                <span class="stat-label">已完成</span>
+                <span class="stat-value" data-field="completed_jobs">1</span>
+            </div>
+            <div class="stat-badge danger-stat">
+                <span class="stat-label">卡住/異常警示</span>
+                <span class="stat-value" data-field="idle_alert_count">1</span>
+            </div>
+            <div class="stat-badge highlight">
+                <span class="stat-label">累計違規數</span>
+                <span class="stat-value" data-field="total_violations">8</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+            <!-- Source & Target Folder -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        任務來源與輸出
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label>伺服器影片資料夾路徑</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="D:\Surveillance_Videos\Chiayi_20260805\" data-field="source_folder_path">
+                        <button class="btn btn-secondary btn-sm" onclick="openBrowser('source')">瀏覽</button>
+                        <button class="btn btn-secondary btn-sm" onclick="scanFolder()">掃描</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>舉證檔案輸出根目錄</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="D:\Enforcement_Exports\" data-field="output_root_path">
+                        <button class="btn btn-secondary btn-sm" onclick="openBrowser('output')">瀏覽</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 處理模式：完整 / 測試 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                        處理模式
+                    </span>
+                </div>
+                <div class="mode-group">
+                    <label class="mode-card">
+                        <input type="radio" name="pipeline_mode" value="full" data-field="mode" checked>
+                        <span class="mode-body">
+                            <span class="mode-name">完整</span>
+                            <span class="mode-desc">YOLO 找人車 → VLM 判定行為 → 事件合併。正式執法流程。</span>
+                        </span>
+                    </label>
+                    <label class="mode-card">
+                        <input type="radio" name="pipeline_mode" value="test" data-field="mode">
+                        <span class="mode-body">
+                            <span class="mode-name">測試</span>
+                            <span class="mode-desc">整支影片餵 Co-DETR（第 18 次訓練）。偵測到 litter/garbage 的幀即為違規片段，<b>不經過 VLM</b>。</span>
+                        </span>
+                    </label>
+                </div>
+                <div class="mode-note" id="modeNote"></div>
+            </div>
+
+            <!-- Job Detection Options (JobOptions) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        偵測參數設定 (JobOptions)
+                    </span>
+                </div>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked data-field="enable_litter">
+                        偵測「亂丟垃圾 / 菸蒂」
+                    </label>
+                    <label class="checkbox-label" data-opt-full>
+                        <input type="checkbox" checked data-field="enable_urination">
+                        偵測「隨地便溺」
+                    </label>
+                    <label class="checkbox-label" data-opt-full>
+                        <input type="checkbox" data-field="require_plate_for_csv">
+                        僅產出包含車牌之事件 CSV
+                    </label>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>抽幀間隔 (heavy_frame_stride)</label>
+                    <input type="number" class="form-control" value="1" min="1" max="10" data-field="heavy_frame_stride">
+                </div>
+                <div class="form-group" data-opt-full>
+                    <label>單片 VLM 最大判定次數 (max_vlm_calls)</label>
+                    <input type="number" class="form-control" value="2400" step="100" data-field="max_vlm_calls_per_video">
+                </div>
+                <div class="form-group">
+                    <label>同時平行處理影片數</label>
+                    <input type="number" class="form-control" value="3" min="1" max="8" data-field="parallel_jobs_count">
+                </div>
+            </div>
+
+            <!-- Batch Control Buttons -->
+            <div class="panel">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startBatchProcessing()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        開始批量科技取締
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportAllCSV()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        匯出整批總違規 CSV
+                    </button>
+                    <button class="btn btn-outline" onclick="clearQueue()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        清除已完成清單
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main View Tabs & Tables -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('jobs')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                    執法工作佇列 (Video Jobs)
+                    <span class="tab-badge" data-field="jobs_count">7</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('player')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    🎥 違規片段播放與審查
+                    <span class="tab-badge" style="background-color: #dbeafe; color: #1d4ed8;" data-field="clips_count">3</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('events')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    已抓到違規事件 (Violations)
+                    <span class="tab-badge" style="background-color: var(--danger-bg); color: var(--danger);" data-field="events_count">8</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('logs')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    系統執行紀錄 (Live Logs)
+                </button>
+            </div>
+
+            <!-- Tab 1: Video Queue Table -->
+            <div id="tab-jobs" class="tab-content active">
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>影片檔名 / 站別分層</th>
+                                <th>處理階段 (Status/Stage)</th>
+                                <th>處理進度 (Progress)</th>
+                                <th>已耗時 (elapsed_sec)</th>
+                                <th>VLM 遙測資訊 (Telemetry)</th>
+                                <th>閒置/狀態</th>
+                                <th>違規數</th>
+                                <th>⭐ 執法人員註記 (Notes)</th>
+                                <th>舉證目錄 / 操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Extracted Violation Video Player & Scrubbing Timeline Controls -->
+            <div id="tab-player" class="tab-content">
+                <div class="player-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="font-size: 16px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                            違規片段播放與微調審查器
+                        </h2>
+                        <div>
+                            <span class="vlm-tag">正在審查檔名:</span> 
+                            <strong style="color: #0284c7; font-family: monospace;" data-field="selected_clip_name">Day_Garbage_CH16_001_Clip01.mp4</strong>
+                        </div>
+                    </div>
+
+                    <!-- 播放器三塊（畫面 / 時間軸 / 控制列）合成一個視覺單元，中間不留間隙，
+                         這樣控制列就貼在影片下方，跟一般影片播放器的操作習慣一致。 -->
+                    <div class="player-shell">
+
+                    <!-- Interactive Video Canvas Player Screen -->
+                    <div class="player-screen-wrapper">
+                        <!-- 不要寫死 aspect-ratio：監視器影片是 4:3（2592×1944），
+                             硬套 16/9 會讓影片框比容器高，再被 overflow:hidden 裁掉上下。
+                             改成填滿容器 + object-fit:contain，由瀏覽器依影片自身比例加黑邊。 -->
+                        <video id="realVideo" playsinline preload="metadata"
+                               style="display:none;width:100%;height:100%;object-fit:contain;background:#000;"></video>
+                        <button class="fs-overlay-btn" onclick="toggleFullscreen()" title="全螢幕 (F)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                            <span id="fsBtnLabel">全螢幕</span>
+                        </button>
+                        <svg class="player-svg-canvas" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" id="playerSvgCanvas">
+                            <rect width="800" height="450" fill="#0f172a"/>
+                            <line x1="0" y1="225" x2="800" y2="225" stroke="#1e293b" stroke-width="1"/>
+                            <line x1="400" y1="0" x2="400" y2="450" stroke="#1e293b" stroke-width="1"/>
+                            
+                            <text x="20" y="35" fill="#38bdf8" font-family="monospace" font-size="15" font-weight="bold">CCTV CH16 - 示範路口 (2026-08-05)</text>
+                            <text x="20" y="60" fill="#38bdf8" font-family="monospace" font-size="14" id="player-time-overlay">00:01:23 (Frame #2490 / 9000)</text>
+
+                            <g id="player-ai-annotations">
+                                <rect x="240" y="130" width="290" height="230" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>
+                                <rect x="240" y="100" width="160" height="30" fill="#ef4444"/>
+                                <text x="250" y="121" fill="#ffffff" font-weight="bold" font-size="14" id="player-violation-label">違規: 亂丟垃圾 [0.94]</text>
+
+                                <rect x="420" y="290" width="150" height="50" fill="#fef08a" stroke="#000000" stroke-width="2"/>
+                                <text x="435" y="323" fill="#000000" font-family="monospace" font-weight="900" font-size="22" id="player-plate-label">AAA-0001</text>
+                            </g>
+
+                            <text x="770" y="35" text-anchor="end" fill="#22c55e" font-family="monospace" font-size="14" font-weight="bold" id="player-status-indicator">● PLAYING (1.0x)</text>
+                        </svg>
+                    </div>
+
+                    <!-- Timeline Scrubbing & Violation Segment Highlight Bar -->
+                    <div class="timeline-section">
+                        <div class="timeline-bar-wrapper" id="timelineWrapper">
+                            <div class="timeline-marker-highlight" style="left: 24%; width: 8%;" title="違規事件 1: 亂丟垃圾 (00:01:12 ~ 00:01:36)"></div>
+                            <div class="timeline-marker-highlight" style="left: 80%; width: 6%;" title="違規事件 2: 亂丟菸蒂 (00:04:00 ~ 00:04:18)"></div>
+
+                            <div class="timeline-marker-flag" style="left: 27.6%;" onclick="seekToSeconds(83)" data-field="violation_marker">📍 01:23 亂丟垃圾</div>
+                            <div class="timeline-marker-flag" style="left: 83%;" onclick="seekToSeconds(250)">📍 04:10 亂丟菸蒂</div>
+
+                            <input type="range" class="timeline-slider" min="0" max="300" value="83" id="timelineSlider" data-field="timeline_scrubber" oninput="onTimelineScrub(this.value)">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim);">
+                            <span>00:00 (片段開始)</span>
+                            <span>← 可自由往前往後拉動時間軸查看前後畫面 →</span>
+                            <span><span data-field="clip_end_label">05:00</span> (片段結束)</span>
+                        </div>
+                    </div>
+
+                    <!-- Playback Controls Toolbar -->
+                    <div class="player-controls-toolbar">
+                        <div class="control-group">
+                            <!-- 標示寫「按下去會發生什麼」，不是把兩個功能都列出來。
+                                 實際文字由 setPlayButton() 依影片的 play/pause 事件即時切換。 -->
+                            <button class="btn btn-primary btn-sm" id="playPauseBtn"
+                                    onclick="togglePlayPause()" title="播放 / 暫停（空白鍵）">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                播放
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="toggleFullscreen()" title="全螢幕 (F)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                                全螢幕
+                            </button>
+                        </div>
+
+                        <div class="control-group" style="border-left: 1px solid var(--border-color); padding-left: 10px;">
+                            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">逐格控制:</span>
+                            <button class="btn btn-secondary btn-sm" onclick="stepFrame(-1)" title="切換至上一幀">
+                                ◀ 上一幀 (-1幀)
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="stepFrame(1)" title="切換至下一幀">
+                                下一幀 (+1幀) ▶
+                            </button>
+                        </div>
+
+                        <div class="control-group" style="border-left: 1px solid var(--border-color); padding-left: 10px;">
+                            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">播放速度 (微調 0.1x):</span>
+                            <button class="btn btn-secondary btn-sm" onclick="changePlaybackSpeed(-0.1)" title="減速 0.1x">
+                                - 0.1x
+                            </button>
+                            <div class="speed-indicator">
+                                <span data-field="playback_rate">1.0</span>x
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="changePlaybackSpeed(0.1)" title="加速 0.1x">
+                                + 0.1x
+                            </button>
+                        </div>
+
+                        <div class="control-group">
+                            <button class="btn btn-outline btn-sm" onclick="setSpeedPreset(0.5)">0.5x慢速</button>
+                            <button class="btn btn-outline btn-sm" onclick="setSpeedPreset(1.0)">1.0x正常</button>
+                            <button class="btn btn-outline btn-sm" onclick="setSpeedPreset(1.5)">1.5x快速</button>
+                        </div>
+
+                        <!-- 時間讀數原本在時間軸上方自成一列，把控制列推得離影片很遠。
+                             移進控制列右側，少一列、也符合一般播放器的擺法。 -->
+                        <div class="control-group player-time-readout">
+                            <span style="font-family: monospace; color: #2563eb; font-weight: 700;" data-field="current_time">00:00:00</span>
+                            <span style="color: #94a3b8;">/</span>
+                            <span style="font-family: monospace;" data-field="total_duration">00:00:00</span>
+                            <span style="color: #64748b; font-size: 11px;">(幀 <span data-field="current_frame">—</span> / <span data-field="total_frames">—</span>)</span>
+                        </div>
+                    </div>
+
+                    </div><!-- /.player-shell -->
+
+                    <!-- Extracted Clips Gallery -->
+                    <div>
+                        <div class="clips-gallery-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>
+                            系統自動擷取之違規片段清單 (Extracted Clips)
+                        </div>
+                        <div class="clips-grid" id="clipsGrid">
+                            <div class="clip-card active-clip" onclick="playExtractedClip('Day_Garbage_CH16_001.mp4', '00:01:23', '亂丟垃圾', 'AAA-0001')">
+                                <div class="clip-card-header">
+                                    <span class="clip-card-title">片段 #01: 亂丟垃圾</span>
+                                    <span class="status-badge status-error" style="font-size:10px; padding:2px 6px;">00:01:23</span>
+                                </div>
+                                <div class="clip-card-body">
+                                    車牌: <strong>AAA-0001</strong> | 長度: 24秒<br>
+                                    位置: 示範路口
+                                </div>
+                            </div>
+
+                            <div class="clip-card" onclick="playExtractedClip('Day_Garbage_CH16_001.mp4', '00:04:10', '亂丟菸蒂', 'AAA-0002')">
+                                <div class="clip-card-header">
+                                    <span class="clip-card-title">片段 #02: 亂丟菸蒂</span>
+                                    <span class="status-badge status-error" style="font-size:10px; padding:2px 6px;">00:04:10</span>
+                                </div>
+                                <div class="clip-card-body">
+                                    車牌: <strong>AAA-0002</strong> | 長度: 18秒<br>
+                                    位置: 示範路口
+                                </div>
+                            </div>
+
+                            <div class="clip-card" onclick="playExtractedClip('Market_Garbage_CH12_003.mp4', '00:02:45', '隨地便溺', '無車牌')">
+                                <div class="clip-card-header">
+                                    <span class="clip-card-title">片段 #03: 隨地便溺</span>
+                                    <span class="status-badge status-merging" style="font-size:10px; padding:2px 6px;">00:02:45</span>
+                                </div>
+                                <div class="clip-card-body">
+                                    車牌: <strong>未讀取到車牌</strong> | 長度: 45秒<br>
+                                    位置: 示範路段
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ⭐ New Feature: Dedicated Video Notes / Officer Annotations Panel -->
+                    <div class="notes-panel">
+                        <div class="notes-header">
+                            <div class="notes-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                執法人員文字審查筆記與案件註記 (Officer Notes)
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="note-saved-tag" id="noteSavedTag" data-field="note_saved_at">✓ 已自動儲存 15:50</span>
+                                <button class="btn btn-primary btn-sm" onclick="saveActiveNote()">儲存註記</button>
+                            </div>
+                        </div>
+                        <textarea class="notes-textarea" id="activeVideoNoteTextarea" placeholder="請在此輸入本部影片之稽查備註、車輛特徵、行為細節或處分建議..." data-field="job_note">騎士著黃色雨衣，右手甩丟黑色垃圾袋於路邊變壓器旁，無路人受傷。已送交分局調閱路口監視器協助追查車主。</textarea>
+                        
+                        <div class="notes-quick-tags">
+                            <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">快速快捷標籤:</span>
+                            <button class="quick-tag-btn" onclick="addQuickNoteTag('已開立裁處書')">+ 已開立裁處書</button>
+                            <button class="quick-tag-btn" onclick="addQuickNoteTag('移送警方協助辨識')">+ 移送警方協助辨識</button>
+                            <button class="quick-tag-btn" onclick="addQuickNoteTag('畫面模糊再審')">+ 畫面模糊再審</button>
+                            <button class="quick-tag-btn" onclick="addQuickNoteTag('無法辨識車牌')">+ 無法辨識車牌</button>
+                            <button class="quick-tag-btn" onclick="addQuickNoteTag('重複通報排除')">+ 重複通報排除</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab 3: Violation Events Detail Table -->
+            <div id="tab-events" class="tab-content">
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>來源影片</th>
+                                <th>畫面時間戳記 (監視器時間)</th>
+                                <th>影片相對時間</th>
+                                <th>辨識車牌</th>
+                                <th>違規行為</th>
+                                <th>AI 信心分數</th>
+                                <th>VLM 判定理由與行為描述</th>
+                                <th>⭐ 稽查備註</th>
+                                <th>證據照片 / 影片</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 4: System Live Logs -->
+            <div id="tab-logs" class="tab-content">
+                <div class="log-panel" id="system-log-container">
+                    <div class="log-entry info"><span class="time">[14:30:00]</span> [SYSTEM] 科技執法 AI 推論服務初始化完畢。即時模式：使用 CUDA 12.1 GPU 加速。</div>
+                    <div class="log-entry info"><span class="time">[14:30:02]</span> [SCANNER] 成功掃描目錄 `D:\Surveillance_Videos\Chiayi_20260805\`，共找到 7 部待處理 mp4 檔案。</div>
+                    <div class="log-entry info"><span class="time">[14:30:05]</span> [ENGINE] 提交 Job job_001 (Day_Garbage_CH16_001.mp4)，分配站別標籤: CH16。</div>
+                    <div class="log-entry info"><span class="time">[14:30:08]</span> [YOLO] job_001 開始執行 YOLOv8 人車抽幀預過濾...</div>
+                    <div class="log-entry info"><span class="time">[14:31:15]</span> [VLM] job_001 進入 VLM 行為推論階段。處理幀 #0450... 判定為「亂丟垃圾」 (信心度 0.94)。</div>
+                    <div class="log-entry warn"><span class="time">[14:48:20]</span> [WARNING] job_005 (Highway_Litter_CH16_088.mp4) 超過 120 秒未回報 VLM 推論進度，觸發閒置警示！</div>
+                    <div class="log-entry success"><span class="time">[14:50:00]</span> [OUTPUT] job_006 完成，已匯出 CSV 報告至 `CH12/20260805_120000_Market_Garbage_CH12_003/違規紀錄.csv`。</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Evidence Screenshot Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>違規證據畫面預覽 (AI 自動截圖與車牌標記)</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-img-box">
+                    <svg class="preview-svg-placeholder" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="800" height="450" fill="#1e293b"/>
+                        <circle cx="400" cy="225" r="180" fill="#334155" opacity="0.4"/>
+                        <text x="30" y="40" fill="#38bdf8" font-family="monospace" font-size="16">CCTV CH16 - 示範路口</text>
+                        <text x="30" y="65" fill="#ffffff" font-family="monospace" font-size="14" id="modal-time-text">2026-08-05 06:47:26</text>
+                        
+                        <rect x="260" y="140" width="280" height="220" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>
+                        <rect x="260" y="110" width="140" height="30" fill="#ef4444"/>
+                        <text x="270" y="130" fill="#ffffff" font-weight="bold" font-size="14" id="modal-type-text">違規: 亂丟垃圾</text>
+                        
+                        <rect x="420" y="300" width="160" height="50" fill="#fef08a" stroke="#000000" stroke-width="2"/>
+                        <text x="440" y="333" fill="#000000" font-family="monospace" font-weight="900" font-size="22" id="modal-plate-text">AAA-0001</text>
+                    </svg>
+                </div>
+                <div class="preview-details">
+                    <div class="preview-detail-item"><strong>肇事車牌:</strong> <span id="detail-plate">AAA-0001</span></div>
+                    <div class="preview-detail-item"><strong>違規項目:</strong> <span id="detail-type">亂丟垃圾</span></div>
+                    <div class="preview-detail-item"><strong>AI 信心度:</strong> <span id="detail-conf">0.94</span></div>
+                    <div class="preview-detail-item"><strong>判定時間:</strong> <span id="detail-time">2026-08-05 06:47:26</span></div>
+                    <div class="preview-detail-item" style="grid-column: span 2;"><strong>VLM 描述:</strong> <span id="detail-reason">機車駕駛騎士右手向下甩出黑色垃圾袋，垃圾袋離手並落地於路邊草叢。</span></div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="closeModal()">關閉</button>
+                    <button class="btn btn-primary" onclick="alert('已複製影片片段與證據包下載連結')">下載違規影片片段 (MP4)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic (Vanilla JS, 0 External Dependencies) -->
+    <script>
+        // Global Player State
+        let isPlaying = true;
+        let playbackRate = 1.0;
+        let currentSeconds = 83; // 01:23
+        const fps = 30;
+
+        // Mock notes store for videos
+        const videoNotesStore = {
+            'Day_Garbage_CH16_001.mp4': '騎士黃雨衣，垃圾落路邊',
+            'Night_Smoke_CH08_004.mp4': '',
+            'River_Dump_CH22_012.mp4': '',
+            'Street_Urination_CH03_009.mp4': '',
+            'Highway_Litter_CH16_088.mp4': '卡住需處理',
+            'Market_Garbage_CH12_003.mp4': '已移送警方辨識',
+            'Corrupted_Stream_CH01_999.mp4': '毀損檔案已排除'
+        };
+
+        // Tab Switch Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'jobs') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-jobs').classList.add('active');
+            } else if (tabName === 'player') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-player').classList.add('active');
+            } else if (tabName === 'events') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('tab-events').classList.add('active');
+            } else if (tabName === 'logs') {
+                document.querySelectorAll('.tab-btn')[3].classList.add('active');
+                document.getElementById('tab-logs').classList.add('active');
+            }
+        }
+
+        // ⭐ Officer Notes Logic (Note saving & Quick Tags)
+        function saveActiveNote() {
+            const currentClip = document.querySelector('[data-field="selected_clip_name"]').textContent;
+            const noteContent = document.getElementById('activeVideoNoteTextarea').value;
+            
+            // Map clip to video name
+            const videoName = currentClip.split('_Clip')[0] || 'Day_Garbage_CH16_001.mp4';
+            videoNotesStore[videoName] = noteContent;
+
+            // Show saved timestamp badge
+            const nowTime = new Date().toTimeString().split(' ')[0].substring(0, 5);
+            const badge = document.getElementById('noteSavedTag');
+            badge.textContent = `✓ 已自動儲存 ${nowTime}`;
+            badge.style.display = 'inline';
+
+            appendLog(`[NOTE] 已為影片 ${videoName} 儲存稽查註記: "${noteContent.substring(0, 20)}..."`, 'success');
+        }
+
+        function addQuickNoteTag(tagText) {
+            const textarea = document.getElementById('activeVideoNoteTextarea');
+            if (textarea.value.trim() === '') {
+                textarea.value = `[${tagText}]`;
+            } else {
+                textarea.value += ` [${tagText}]`;
+            }
+            saveActiveNote();
+        }
+
+        function saveTableJobNote(jobId, val) {
+            appendLog(`[NOTE] 佇列更新 (${jobId}) 註記: "${val}"`, 'info');
+        }
+
+        // Playback & Frame-by-Frame Controls Implementation
+        function updatePlayerUI() {
+            const mins = Math.floor(currentSeconds / 60).toString().padStart(2, '0');
+            const secs = Math.floor(currentSeconds % 60).toString().padStart(2, '0');
+            const timeStr = `00:${mins}:${secs}`;
+            const currentFrameNum = Math.floor(currentSeconds * fps);
+
+            document.querySelector('[data-field="current_time"]').textContent = timeStr;
+            document.querySelector('[data-field="current_frame"]').textContent = currentFrameNum;
+            document.getElementById('timelineSlider').value = currentSeconds;
+            document.getElementById('player-time-overlay').textContent = `${timeStr} (Frame #${currentFrameNum} / 9000)`;
+        }
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playPauseBtn');
+            const statusEl = document.getElementById('player-status-indicator');
+            if (isPlaying) {
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg> 暫停`;
+                statusEl.textContent = `● PLAYING (${playbackRate.toFixed(1)}x)`;
+                statusEl.setAttribute('fill', '#22c55e');
+            } else {
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 播放`;
+                statusEl.textContent = `❚❚ PAUSED`;
+                statusEl.setAttribute('fill', '#f59e0b');
+            }
+        }
+
+        function stepFrame(direction) {
+            if (isPlaying) {
+                togglePlayPause();
+            }
+            currentSeconds = Math.max(0, Math.min(300, currentSeconds + (direction / fps)));
+            updatePlayerUI();
+            appendLog(`[PLAYER] 逐格調整: ${direction > 0 ? '+1 幀' : '-1 幀'} -> 目前 Frame #${Math.floor(currentSeconds * fps)}`, 'info');
+        }
+
+        function changePlaybackSpeed(delta) {
+            playbackRate = Math.max(0.1, Math.min(3.0, parseFloat((playbackRate + delta).toFixed(1))));
+            document.querySelector('[data-field="playback_rate"]').textContent = playbackRate.toFixed(1);
+            if (isPlaying) {
+                document.getElementById('player-status-indicator').textContent = `● PLAYING (${playbackRate.toFixed(1)}x)`;
+            }
+            appendLog(`[PLAYER] 調整播放倍率至: ${playbackRate.toFixed(1)}x`, 'info');
+        }
+
+        function setSpeedPreset(rate) {
+            playbackRate = rate;
+            document.querySelector('[data-field="playback_rate"]').textContent = rate.toFixed(1);
+            if (isPlaying) {
+                document.getElementById('player-status-indicator').textContent = `● PLAYING (${rate.toFixed(1)}x)`;
+            }
+            appendLog(`[PLAYER] 設定速播放速率: ${rate.toFixed(1)}x`, 'info');
+        }
+
+        function onTimelineScrub(val) {
+            currentSeconds = parseFloat(val);
+            updatePlayerUI();
+        }
+
+        function seekToSeconds(sec) {
+            currentSeconds = sec;
+            updatePlayerUI();
+            appendLog(`[PLAYER] 跳躍至指定時間點: ${sec} 秒`, 'info');
+        }
+
+        function playExtractedClip(videoName, timestampStr, violationType, plateNum) {
+            switchTab('player');
+            document.querySelector('[data-field="selected_clip_name"]').textContent = `${videoName}_Clip_${violationType}.mp4`;
+            document.getElementById('player-violation-label').textContent = `違規: ${violationType} [0.94]`;
+            document.getElementById('player-plate-label').textContent = plateNum;
+
+            // Load saved note for this video if exists
+            const savedNote = videoNotesStore[videoName] || '';
+            document.getElementById('activeVideoNoteTextarea').value = savedNote;
+
+            const parts = timestampStr.split(':');
+            if (parts.length === 3) {
+                const totalSec = parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+                currentSeconds = totalSec;
+                updatePlayerUI();
+            }
+            appendLog(`[PLAYER] 載入違規擷取片段: ${videoName} (${timestampStr})`, 'success');
+        }
+
+        // 原設計稿的兩個 setInterval（播放器 ticker、耗時逐秒跳動）
+        // 已移至 /static/app.js，改由伺服器推送的真實狀態驅動。
+
+
+        // Modal Logic for Evidence Screenshots
+        function previewSnapshot(plate, type, conf, timeStr, reason) {
+            document.getElementById('detail-plate').textContent = plate;
+            document.getElementById('detail-type').textContent = type;
+            document.getElementById('detail-conf').textContent = conf;
+            document.getElementById('detail-time').textContent = timeStr;
+            document.getElementById('detail-reason').textContent = reason;
+
+            document.getElementById('modal-plate-text').textContent = plate;
+            document.getElementById('modal-type-text').textContent = "違規: " + type;
+            document.getElementById('modal-time-text').textContent = timeStr;
+
+            document.getElementById('previewModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('previewModal').classList.remove('active');
+        }
+
+        // Mock Button Actions & Logging
+        function appendLog(msg, type = 'info') {
+            const container = document.getElementById('system-log-container');
+            const now = new Date().toTimeString().split(' ')[0];
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerHTML = `<span class="time">[${now}]</span> ${msg}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function scanFolder() {
+            appendLog('[SCANNER] 正在重新掃描伺服器資料夾...', 'info');
+            setTimeout(() => {
+                appendLog('[SCANNER] 掃描完成：共發現 7 個影片檔案，已載入工作佇列。', 'success');
+            }, 600);
+        }
+
+        function startBatchProcessing() {
+            appendLog('[ENGINE] 已啟動批量科技執法推論作業！自動擷取違規片段中...', 'info');
+            switchTab('player');
+            alert('已啟動執法作業！系統自動擷取違規片段，已切換至「違規片段播放與審查」頁籤供您檢視播放與填寫註記。');
+        }
+
+        function exportAllCSV() {
+            appendLog('[CSV] 已打包下載整批違規事件總表與稽查註記 (total_violations_20260805.csv)', 'success');
+            alert('整批 CSV (含稽查員筆記) 匯出完畢！');
+        }
+
+        function clearQueue() {
+            appendLog('[QUEUE] 已清除已完成與失敗的紀錄。', 'info');
+        }
+
+        function viewJobDetails(jobId) {
+            appendLog(`[GUI] 查看工作 details: ${jobId}`, 'info');
+            switchTab('events');
+        }
+
+        function showErrorLog(jobId) {
+            appendLog(`[ERROR_LOG] ${jobId}: FFmpeg video container header invalid or missing stream index.`, 'error');
+            switchTab('logs');
+        }
+
+        function restartJob(jobId) {
+            appendLog(`[RETRY] 正在嘗試重新啟動卡住的工作 ${jobId}...`, 'warn');
+            alert(`已重新送出 ${jobId} 判定工作！`);
+        }
+    </script>
+
+    <!-- ══ 以下為接後端新增：列樣板、資料夾瀏覽器、app.js ══ -->
+
+    <!-- 工作佇列列樣板：涵蓋 7 種狀態的所有欄位，由 JS 依 job 狀態填值與顯隱 -->
+    <template id="tplJobRow">
+        <tr>
+            <td>
+                <strong data-field="video_name"></strong>
+                <div class="path-hierarchy" data-field="output_dir"></div>
+            </td>
+            <td>
+                <span class="status-badge" data-field="status">
+                    <span data-field="stage_display"></span>
+                </span>
+                <span class="alert-pill" data-field="idle_alert" style="display:none;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    閒置 &gt; 2分
+                </span>
+            </td>
+            <td>
+                <div class="progress-box">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width:0%;" data-field="progress_bar"></div>
+                    </div>
+                    <div class="progress-text-row">
+                        <span data-field="progress">0.0%</span>
+                        <span data-field="frame_info"></span>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span data-field="elapsed_sec" data-raw-seconds="0">0小時0分0秒</span>
+            </td>
+            <td>
+                <div class="vlm-cell">
+                    <div><span class="vlm-tag">已呼叫:</span> <span class="vlm-val" data-field="vlm_calls_done">0</span> 次</div>
+                    <div><span class="vlm-tag">平均延遲:</span> <span class="vlm-val" data-field="vlm_avg_latency">0.00</span> s</div>
+                    <div><span class="vlm-tag">逾時:</span> <span class="vlm-val" data-field="vlm_timeouts">0</span> 次</div>
+                </div>
+            </td>
+            <td data-cell="idle"></td>
+            <td data-cell="violations"></td>
+            <td>
+                <input type="text" class="form-control" style="width: 170px; font-size: 12px;"
+                       placeholder="輸入稽查註記..." data-field="job_note">
+            </td>
+            <td data-cell="action"></td>
+        </tr>
+    </template>
+
+    <!-- 違規事件列樣板 -->
+    <template id="tplEventRow">
+        <tr>
+            <td><span data-field="source_video"></span></td>
+            <td><span data-field="screen_time"></span></td>
+            <td><span data-field="frame_time"></span></td>
+            <td><strong style="font-family: monospace; font-size: 14px;" data-field="plate_number"></strong></td>
+            <td><span class="status-badge" data-field="violation_type"></span></td>
+            <td><strong data-field="confidence"></strong></td>
+            <td style="max-width: 260px; white-space: normal;" data-field="reason"></td>
+            <td><span style="font-size: 12px; color: var(--text-muted);" data-field="job_note"></span></td>
+            <td data-cell="action"></td>
+        </tr>
+    </template>
+
+    <!-- 伺服器端資料夾瀏覽器：瀏覽器的檔案選擇器看不到伺服器檔案系統，必須自己做 -->
+    <!-- 片段人工編輯：新增 / 修改起訖。刪除是直接確認，不用對話框。 -->
+    <div class="modal-overlay" id="clipEditModal">
+        <div class="modal-card" style="max-width:520px;">
+            <div class="modal-header">
+                <h3 id="clipEditTitle">編輯違規片段起訖</h3>
+                <button class="modal-close" onclick="closeClipEditor()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>違規行為</label>
+                    <select class="form-control" id="clipEditBehavior"></select>
+                </div>
+                <div class="form-group">
+                    <label>違規起始（原始影片時間）</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="clipEditStart" placeholder="00:00:05 或 5">
+                        <button class="btn btn-secondary btn-sm" onclick="useCurrentTime('start')"
+                                title="取用播放器目前停留的位置">用目前播放位置</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>違規結束（原始影片時間）</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="clipEditEnd" placeholder="00:00:08 或 8">
+                        <button class="btn btn-secondary btn-sm" onclick="useCurrentTime('end')"
+                                title="取用播放器目前停留的位置">用目前播放位置</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>車牌</label>
+                    <input type="text" class="form-control" id="clipEditPlate"
+                           placeholder="例如 0000-AA（未辨識到可留空）"
+                           style="font-family: monospace; letter-spacing: .5px;">
+                </div>
+                <div class="form-group">
+                    <label>判定理由（違規事由）</label>
+                    <textarea class="form-control" id="clipEditReason" rows="4"
+                              placeholder="留空 → 依偵測結果自動產生；填了 → 原樣存進舉證紀錄，系統不會改寫"
+                              style="resize: vertical; line-height: 1.6;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; gap:12px;">
+                    <span style="font-size:11.5px; color:var(--text-dim); line-height:1.5;" id="clipEditHint"></span>
+                    <div style="display:flex; gap:10px; flex-shrink:0;">
+                        <button class="btn btn-secondary" onclick="closeClipEditor()">取消</button>
+                        <button class="btn btn-primary" onclick="saveClipEdit()">儲存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="browserModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="browserTitle">選擇伺服器上的影片資料夾</h3>
+                <button class="modal-close" onclick="closeBrowser()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="browserRoots" style="margin-bottom:8px;"></div>
+                <div class="browser-path" id="browserPath"></div>
+                <div class="browser-list" id="browserList"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <span style="font-size:12px; color:var(--text-dim);" id="browserHint"></span>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-secondary" onclick="closeBrowser()">取消</button>
+                        <button class="btn btn-primary" onclick="chooseCurrentFolder()">選擇這個資料夾</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
